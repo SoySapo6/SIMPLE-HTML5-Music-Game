@@ -632,7 +632,7 @@ function draw_Notes() {
 
                 let centerX = L + 75;
                 let centerY = 800 - pos + noteThick / 2;
-                let radius = 50;
+                let radius = 30;
 
                 // Si la nota no tiene color guardado, lo genera y guarda
                 if (!note._color) {
