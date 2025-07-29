@@ -575,78 +575,92 @@ function EndingScene() {
 }
 function draw_Notes() {
     ctx.save();
-    for(let Col=0;Col<4;Col++){
-        for(let i=LineQueueHead[Col];i<LineQueueTail[Col];i++){
+    for (let Col = 0; Col < 4; Col++) {
+        for (let i = LineQueueHead[Col]; i < LineQueueTail[Col]; i++) {
 
-            if(Objs[LineQueue[Col][i]]["EndTime"]>0&&time-Objs[LineQueue[Col][i]]["EndTime"]>0){
-                if(Objs[LineQueue[Col][i]]["Available"]&&LineHold[Col]===LineQueue[Col][i]){
+            if (Objs[LineQueue[Col][i]]["EndTime"] > 0 && time - Objs[LineQueue[Col][i]]["EndTime"] > 0) {
+                if (Objs[LineQueue[Col][i]]["Available"] && LineHold[Col] === LineQueue[Col][i]) {
                     HitEvent(Col, 0);
-                    LineHold[Col]=-1;
-                    LineQueueHead[Col]=i+1;
+                    LineHold[Col] = -1;
+                    LineQueueHead[Col] = i + 1;
                     continue;
                 }
             }
-            if(LineHold[Col]!==LineQueue[Col][i]) {
-                if(Objs[LineQueue[Col][i]]["Available"])
+
+            if (LineHold[Col] !== LineQueue[Col][i]) {
+                if (Objs[LineQueue[Col][i]]["Available"])
                     if (time - Objs[LineQueue[Col][i]]["StartTime"] > timing[5]) {
-                        MissEvent(time<Objs[LineQueue[Col][i]]["StartTime"]);
+                        MissEvent(time < Objs[LineQueue[Col][i]]["StartTime"]);
                         if (Objs[LineQueue[Col][i]]["EndTime"] === 0) {
                             LineQueueHead[Col] = i + 1;
                             continue;
                         } else {
                             Objs[LineQueue[Col][i]]["Available"] = false;
                         }
-
                     }
             }
-            let L=0;
-            let color="#FFFFFF";
-            ctx.strokeStyle="#FF0000";
-            switch(Col){
+
+            let L = 0;
+            let color = "#FFFFFF";
+            ctx.strokeStyle = "#FF0000";
+
+            switch (Col) {
                 case 1:
-                    L=150;
-                    color="#0BFFFF";
+                    L = 150;
+                    color = "#0BFFFF";
                     break;
                 case 2:
-                    L=300;
-                    color="#0BFFFF";
+                    L = 300;
+                    color = "#0BFFFF";
                     break;
                 case 3:
-                    L=450;
+                    L = 450;
                     break;
             }
-            if(!Objs[LineQueue[Col][i]]["Available"]){
-                color="#7F7F7F";
-                ctx.strokeStyle="#7F0000";
-                switch(Col){
+
+            if (!Objs[LineQueue[Col][i]]["Available"]) {
+                color = "#7F7F7F";
+                ctx.strokeStyle = "#7F0000";
+                switch (Col) {
                     case 1:
-                        color="#0b7f7f";
+                        color = "#0b7f7f";
                         break;
                     case 2:
-                        color="#0B7F7F";
+                        color = "#0B7F7F";
                         break;
                     case 3:
                         break;
                 }
             }
-            ctx.fillStyle=color;
 
-            ctx.lineWidth=4;
-            let pos=calcPOS(Objs[LineQueue[Col][i]]["StartTime"]);
-            if(pos>800+noteThick)break;
-            if(Objs[LineQueue[Col][i]]["EndTime"]!==0){
-                let pos2=calcPOS(Objs[LineQueue[Col][i]]["EndTime"]);
-                if(pos2<0){
+            ctx.fillStyle = color;
+            ctx.lineWidth = 4;
+            let pos = calcPOS(Objs[LineQueue[Col][i]]["StartTime"]);
+            if (pos > 800 + noteThick) break;
+
+            if (Objs[LineQueue[Col][i]]["EndTime"] !== 0) {
+                let pos2 = calcPOS(Objs[LineQueue[Col][i]]["EndTime"]);
+                if (pos2 < 0) {
                     continue;
                 }
-                ctx.fillRect(L,800-pos2,150,pos2-pos+noteThick);
-                ctx.strokeRect(L+2,800-pos2+2,150-4,pos2-pos+noteThick-4);
 
-            }else{
-                if(pos<0){
+                // Notas largas: línea + borde rectangular
+                ctx.fillRect(L, 800 - pos2, 150, pos2 - pos + noteThick);
+                ctx.strokeRect(L + 2, 800 - pos2 + 2, 150 - 4, pos2 - pos + noteThick - 4);
+            } else {
+                if (pos < 0) {
                     continue;
                 }
-                ctx.fillRect(L,800-pos,150,noteThick);
+
+                // Notas normales: círculo
+                let centerX = L + 75;
+                let centerY = 800 - pos + noteThick / 2;
+                let radius = 30;
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.closePath();
             }
         }
     }
