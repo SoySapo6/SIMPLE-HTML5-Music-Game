@@ -578,8 +578,10 @@ function draw_Notes() {
     for (let Col = 0; Col < 4; Col++) {
         for (let i = LineQueueHead[Col]; i < LineQueueTail[Col]; i++) {
 
-            if (Objs[LineQueue[Col][i]]["EndTime"] > 0 && time - Objs[LineQueue[Col][i]]["EndTime"] > 0) {
-                if (Objs[LineQueue[Col][i]]["Available"] && LineHold[Col] === LineQueue[Col][i]) {
+            let note = Objs[LineQueue[Col][i]];
+
+            if (note["EndTime"] > 0 && time - note["EndTime"] > 0) {
+                if (note["Available"] && LineHold[Col] === LineQueue[Col][i]) {
                     HitEvent(Col, 0);
                     LineHold[Col] = -1;
                     LineQueueHead[Col] = i + 1;
@@ -588,84 +590,71 @@ function draw_Notes() {
             }
 
             if (LineHold[Col] !== LineQueue[Col][i]) {
-                if (Objs[LineQueue[Col][i]]["Available"])
-                    if (time - Objs[LineQueue[Col][i]]["StartTime"] > timing[5]) {
-                        MissEvent(time < Objs[LineQueue[Col][i]]["StartTime"]);
-                        if (Objs[LineQueue[Col][i]]["EndTime"] === 0) {
+                if (note["Available"]) {
+                    if (time - note["StartTime"] > timing[5]) {
+                        MissEvent(time < note["StartTime"]);
+                        if (note["EndTime"] === 0) {
                             LineQueueHead[Col] = i + 1;
                             continue;
                         } else {
-                            Objs[LineQueue[Col][i]]["Available"] = false;
+                            note["Available"] = false;
                         }
                     }
+                }
             }
 
             let L = 0;
-            let color = "#FFFFFF";
-            ctx.strokeStyle = "#FF0000";
 
             switch (Col) {
-                case 1:
-                    L = 150;
-                    color = "#0BFFFF";
-                    break;
-                case 2:
-                    L = 300;
-                    color = "#0BFFFF";
-                    break;
-                case 3:
-                    L = 450;
-                    break;
+                case 1: L = 150; break;
+                case 2: L = 300; break;
+                case 3: L = 450; break;
             }
 
-            if (!Objs[LineQueue[Col][i]]["Available"]) {
-                color = "#7F7F7F";
-                ctx.strokeStyle = "#7F0000";
-                switch (Col) {
-                    case 1:
-                        color = "#0b7f7f";
-                        break;
-                    case 2:
-                        color = "#0B7F7F";
-                        break;
-                    case 3:
-                        break;
-                }
-            }
-
-            ctx.fillStyle = color;
             ctx.lineWidth = 4;
-            let pos = calcPOS(Objs[LineQueue[Col][i]]["StartTime"]);
+
+            let pos = calcPOS(note["StartTime"]);
             if (pos > 800 + noteThick) break;
 
-            if (Objs[LineQueue[Col][i]]["EndTime"] !== 0) {
-                let pos2 = calcPOS(Objs[LineQueue[Col][i]]["EndTime"]);
-                if (pos2 < 0) {
-                    continue;
-                }
+            if (note["EndTime"] !== 0) {
+                // Notas largas
+                let pos2 = calcPOS(note["EndTime"]);
+                if (pos2 < 0) continue;
 
-                // Notas largas: línea + borde rectangular
+                ctx.fillStyle = "#555"; // Color neutro para hold
+                ctx.strokeStyle = "#FFF"; // Borde blanco
+
                 ctx.fillRect(L, 800 - pos2, 150, pos2 - pos + noteThick);
                 ctx.strokeRect(L + 2, 800 - pos2 + 2, 150 - 4, pos2 - pos + noteThick - 4);
             } else {
-                if (pos < 0) {
-                    continue;
-                }
+                // Notas normales (círculos RGB con borde blanco)
+                if (pos < 0) continue;
 
-                // Notas normales: círculo
                 let centerX = L + 75;
                 let centerY = 800 - pos + noteThick / 2;
                 let radius = 30;
 
+                // Si la nota no tiene color guardado, lo genera y guarda
+                if (!note._color) {
+                    let r = Math.floor(Math.random() * 256);
+                    let g = Math.floor(Math.random() * 256);
+                    let b = Math.floor(Math.random() * 256);
+                    note._color = `rgb(${r}, ${g}, ${b})`;
+                }
+
+                ctx.fillStyle = note._color;
+                ctx.strokeStyle = "#FFFFFF";
+
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
                 ctx.fill();
+                ctx.stroke();
                 ctx.closePath();
             }
         }
     }
     ctx.restore();
-}
+} 
 function draw_Lasers() {
     ctx.save();
     for(let Col=0;Col<4;Col++){
